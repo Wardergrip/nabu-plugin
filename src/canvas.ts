@@ -148,7 +148,10 @@ export function renameSelectedNode(app: App, canvas: CanvasController): boolean 
 	const nodes = getSelectedNodes(canvas);
 	if (nodes.length !== 1) return false;
 
-	const file = nodes[0].file;
+	const node = nodes[0];
+	if (!node) return false;
+
+	const file = node.file;
 	if (!file) return false;
 
 	void app.fileManager.promptForFileRename(file);
