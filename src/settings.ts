@@ -35,12 +35,8 @@ export class NabuPluginSettingTab extends PluginSettingTab {
 				}),
 			);
 
-		containerEl.createEl("h3", { text: "Canvas hotkeys" });
-		containerEl.createEl("p", {
-			text:
-				"The group-selection and rename-selection commands have no default hotkey. " +
-				"Bind them under Settings → Hotkeys, search for \"Nabu plugin\".",
-			cls: "setting-item-description",
-		});
+		new Setting(containerEl).setName("Canvas hotkeys").setHeading();
+		new Setting(containerEl).setDesc("The group-selection and rename-selection commands have no default hotkey. " +
+				"Bind them under Settings → Hotkeys, search for \"Nabu plugin\".");
 	}
 }
