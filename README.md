@@ -1,6 +1,10 @@
-# Obsidian Sample Plugin
+# Nabu plugin
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Adds some keybinds for canvases & option to place linked new notes in same folder as source. Might have some more functionality, but this is mainly a plugin for me hence why it is also not found on the community plugin browser. If you want to install it, use the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin to clone it
+
+# Obsidian Sample Plugin Documentation
+
+This is based on the sample plugin template for Obsidian (https://obsidian.md).
 
 This project uses TypeScript to provide type checking and documentation.
 The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
