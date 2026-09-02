@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "nabu-plugin",
+	"name": "Wardergrip's Nabu plugin",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"description": "Adds some keybinds for canvases",
+	"author": "Wardergrip",
+	"authorUrl": "https://github.com/Wardergrip",
+	"fundingUrl": "https://github.com/Wardergrip",
+	"isDesktopOnly": true
 }

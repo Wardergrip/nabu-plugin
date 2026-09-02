@@ -8,14 +8,13 @@ import {
 } from 'obsidian';
 import {
 	DEFAULT_SETTINGS,
-	MyPluginSettings,
-	SampleSettingTab,
+	NabuPluginSettings,
+	NabuSettingTab,
 } from './settings';
 
-// Remember to rename these classes and interfaces!
 
-export default class MyPlugin extends Plugin {
-	settings!: MyPluginSettings;
+export default class NabuPlugin extends Plugin {
+	settings!: NabuPluginSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -72,7 +71,7 @@ export default class MyPlugin extends Plugin {
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new NabuSettingTab(this.app, this));
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
@@ -92,7 +91,7 @@ export default class MyPlugin extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<MyPluginSettings>,
+			(await this.loadData()) as Partial<NabuPluginSettings>,
 		);
 	}
 

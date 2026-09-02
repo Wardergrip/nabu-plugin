@@ -1,18 +1,18 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import MyPlugin from './main';
+import NabuPlugin from './main';
 
-export interface MyPluginSettings {
+export interface NabuPluginSettings {
 	mySetting: string;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
+export const DEFAULT_SETTINGS: NabuPluginSettings = {
 	mySetting: 'default',
 };
 
-export class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+export class NabuSettingTab extends PluginSettingTab {
+	plugin: NabuPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: NabuPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
