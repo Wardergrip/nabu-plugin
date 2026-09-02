@@ -40,7 +40,7 @@ export function patchLinkedNoteFolder(app: App, settings: CanvasCompanionSetting
 						? sourceAbstract.parent
 						: app.vault.getRoot();
 
-				const notePath = linktext.split("#")[0];
+				const notePath = linktext.split("#")[0] ?? linktext;
 				const filename = notePath.split("/").pop() || notePath;
 
 				let file: TFile;

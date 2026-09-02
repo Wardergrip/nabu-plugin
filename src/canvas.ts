@@ -1,45 +1,76 @@
 import { App, TFile, WorkspaceLeaf } from "obsidian";
-import type {
-	BBox,
-	CanvasView,
-	CanvasViewCanvas,
-	CanvasViewCanvasNode,
-} from "obsidian-typings";
 
 /**
- * Everything in this file talks to Obsidian's Canvas view through its
- * undocumented internal API (there is no official plugin API for Canvas).
- * The shapes used here come from the community-maintained `obsidian-typings`
- * project, which reverse-engineers Obsidian's internals from the app build.
- *
- * If a future Obsidian release changes how Canvas stores nodes/selection,
- * this is the only file that should need updating.
+ * Canvas has no official plugin API. The interfaces below describe only the
+ * slice of Canvas's internal runtime shape this file touches - they are
+ * hand-written from observed behavior, not exhaustive, and may need
+ * updating after an Obsidian release changes Canvas internals. Keeping
+ * them local (rather than depending on an external typings package) means
+ * this file is the only thing that needs fixing if that happens, and it
+ * can't fail to resolve in CI.
  */
+
+interface CanvasBBox {
+	minX: number;
+	minY: number;
+	maxX: number;
+	maxY: number;
+}
+
+interface CanvasNode {
+	id: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	/** Present on file-backed nodes (attachments, linked notes). */
+	file?: TFile;
+}
+
+interface CanvasData {
+	nodes: Record<string, unknown>[];
+	edges: Record<string, unknown>[];
+}
+
+interface CanvasController {
+	selection: Set<unknown>;
+	nodes: Map<string, CanvasNode>;
+	getData(): CanvasData;
+	setData(data: CanvasData): void;
+	requestSave(): void;
+	deselectAll(): void;
+	updateSelection(fn: () => void): void;
+}
+
+interface CanvasFileView {
+	getViewType(): string;
+	canvas: CanvasController;
+}
 
 const CANVAS_VIEW_TYPE = "canvas";
 
 /** Returns the active Canvas view's `canvas` controller, or null if the active leaf isn't a canvas. */
-export function getActiveCanvas(app: App): CanvasViewCanvas | null {
+export function getActiveCanvas(app: App): CanvasController | null {
 	const leaf: WorkspaceLeaf | null = app.workspace.activeLeaf;
 	if (!leaf) return null;
-	const view = leaf.view;
+	const view = leaf.view as unknown as CanvasFileView;
 	if (view.getViewType() !== CANVAS_VIEW_TYPE) return null;
-	return (view as unknown as CanvasView).canvas ?? null;
+	return view.canvas ?? null;
 }
 
 /** Nodes in the current selection (edges are filtered out). */
-function getSelectedNodes(canvas: CanvasViewCanvas): CanvasViewCanvasNode[] {
-	const nodes: CanvasViewCanvasNode[] = [];
+function getSelectedNodes(canvas: CanvasController): CanvasNode[] {
+	const nodes: CanvasNode[] = [];
 	for (const item of canvas.selection) {
 		// Duck-type: canvas nodes have x/y/width/height, edges don't.
-		const maybeNode = item as unknown as CanvasViewCanvasNode;
+		const maybeNode = item as Partial<CanvasNode>;
 		if (
-			typeof maybeNode?.x === "number" &&
-			typeof maybeNode?.y === "number" &&
-			typeof maybeNode?.width === "number" &&
-			typeof maybeNode?.height === "number"
+			typeof maybeNode.x === "number" &&
+			typeof maybeNode.y === "number" &&
+			typeof maybeNode.width === "number" &&
+			typeof maybeNode.height === "number"
 		) {
-			nodes.push(maybeNode);
+			nodes.push(maybeNode as CanvasNode);
 		}
 	}
 	return nodes;
@@ -60,7 +91,7 @@ const GROUP_PADDING = 24;
  * Mirrors what the built-in "group selection" toolbar button does, but is
  * reachable as a command (and therefore rebindable to a hotkey).
  */
-export function groupSelection(canvas: CanvasViewCanvas): boolean {
+export function groupSelection(canvas: CanvasController): boolean {
 	const nodes = getSelectedNodes(canvas);
 	if (nodes.length === 0) return false;
 
@@ -75,7 +106,7 @@ export function groupSelection(canvas: CanvasViewCanvas): boolean {
 		maxY = Math.max(maxY, node.y + node.height);
 	}
 
-	const bbox: BBox = {
+	const bbox: CanvasBBox = {
 		minX: minX - GROUP_PADDING,
 		minY: minY - GROUP_PADDING,
 		maxX: maxX + GROUP_PADDING,
@@ -83,10 +114,7 @@ export function groupSelection(canvas: CanvasViewCanvas): boolean {
 	};
 
 	const id = randomId();
-	const data = canvas.getData() as {
-		nodes: Record<string, unknown>[];
-		edges: Record<string, unknown>[];
-	};
+	const data = canvas.getData();
 	data.nodes.push({
 		id,
 		type: "group",
@@ -97,14 +125,14 @@ export function groupSelection(canvas: CanvasViewCanvas): boolean {
 		label: "Group",
 	});
 
-	canvas.setData(data as never);
-	canvas.requestSave(undefined as never);
+	canvas.setData(data);
+	canvas.requestSave();
 
 	const groupNode = canvas.nodes.get(id);
 	if (groupNode) {
 		canvas.deselectAll();
 		canvas.updateSelection(() => {
-			canvas.selection = new Set([groupNode as never]);
+			canvas.selection = new Set([groupNode]);
 		});
 	}
 
@@ -116,11 +144,11 @@ export function groupSelection(canvas: CanvasViewCanvas): boolean {
  * (an attachment or a linked note), opens Obsidian's rename prompt for
  * that file. Returns false (and does nothing) otherwise.
  */
-export function renameSelectedNode(app: App, canvas: CanvasViewCanvas): boolean {
+export function renameSelectedNode(app: App, canvas: CanvasController): boolean {
 	const nodes = getSelectedNodes(canvas);
 	if (nodes.length !== 1) return false;
 
-	const file: TFile | undefined = nodes[0].file;
+	const file = nodes[0].file;
 	if (!file) return false;
 
 	void app.fileManager.promptForFileRename(file);
