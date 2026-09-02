@@ -39,7 +39,7 @@ export class NabuPluginSettingTab extends PluginSettingTab {
 		containerEl.createEl("p", {
 			text:
 				"The group-selection and rename-selection commands have no default hotkey. " +
-				"Bind them under Settings → Hotkeys, search for \"Canvas Companion\".",
+				"Bind them under Settings → Hotkeys, search for \"Nabu plugin\".",
 			cls: "setting-item-description",
 		});
 	}
